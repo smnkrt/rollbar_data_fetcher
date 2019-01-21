@@ -31,11 +31,15 @@ end
 ExtractProjectDeploys = ->(project) do
   project_token = project.fetch(:token)
   url = URI("https://api.rollbar.com/api/1/deploys/?access_token=#{project_token}")
-  latest_deploys = MakeRequest.call(url)
-                              .deploys
-                              .select { |d| d.environment == "production" }
+  deploys = MakeRequest.call(url).deploys.select { |d| d.environment == "production" }
+  project.merge(latest_deploys: deploys)
+end
 
-  project.merge(latest_deploys: latest_deploys)
+ExtractProjectItems = ->(project) do
+  project_token = project.fetch(:token)
+  url = URI("https://api.rollbar.com/api/1/items/?access_token=#{project_token}")
+  items = MakeRequest.call(url).items.select { |d| d.environment == "production" }
+  project.merge(latest_items: items)
 end
 
 projects = FetchProjectsWithName.call(ENV['ROLLBAR_ACCESS_TOKEN'])
