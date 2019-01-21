@@ -12,7 +12,6 @@ MakeRequest = ->(url) do
   JSON.parse(response.read_body).fetch("result")
 end
 
-
 FilterProjectsWithName = ->(result)   { result.reject { |r| r["name"].nil? } }
 ExtractProjectId       = ->(projects) { projects.map { |r| { name: r["name"], id: r["id"] } } }
 
@@ -24,7 +23,7 @@ end
 ExtractProjectAccessToken = ->(project, access_token) do
   project_id = project.fetch(:id)
   url = URI("https://api.rollbar.com/api/1/project/#{project_id}/access_tokens?access_token=#{access_token}")
-  token = MakeRequest.call(url).last["access_token"]
+  token = MakeRequest.call(url).select { |e| e["scopes"].include?("read") }.first["access_token"]
   project.merge(token: token)
 end
 
@@ -34,13 +33,7 @@ ExtractProjectDeploys = ->(project) do
   MakeRequest.call(url).fetch("deploys").select { |d| d["environment"] == "production" }
 end
 
-
 projects = FetchProjectsWithName.call(ENV['ROLLBAR_ACCESS_TOKEN'])
+project  = ExtractProjectAccessToken.call(projects[0], ENV['ROLLBAR_ACCESS_TOKEN'])
 
-project = ExtractProjectAccessToken.call(projects[0], ENV['ROLLBAR_ACCESS_TOKEN'])
-
-binding.pry
-
-latest_deploys       = ExtractProjectDeploys.call(project)
-
-binding.pry
+latest_deploys = ExtractProjectDeploys.call(project)
