@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 class SimpleStruct
-  def initialize
+  def initialize(hash = {})
     @hash = {}
+    hash.each { |k, v| self.[]=(k, v) }
   end
 
   def []=(key, val)
