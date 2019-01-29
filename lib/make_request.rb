@@ -11,5 +11,6 @@ MakeRequest = lambda do |url|
   response = Net::HTTP.new(url.host, url.port)
                       .tap { |h| h.use_ssl = true }
                       .request(request)
-  JSON.parse(response.read_body, object_class: SimpleStruct).result
+  JSON.parse(response.read_body, object_class: SimpleStruct)
+      .result
 end
