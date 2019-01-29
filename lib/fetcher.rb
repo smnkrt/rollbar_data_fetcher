@@ -13,5 +13,16 @@ require 'update_projects_deploys'
 require 'update_project_items'
 
 projects = FetchProjects.call(ENV['ROLLBAR_ACCESS_TOKEN'])
-project  = UpdateProjectAccessToken.call(projects[0], ENV['ROLLBAR_ACCESS_TOKEN'])
-project  = ExtractProjectDeploys.call(project)
+
+projects.each do |project|
+  puts "fetching: #{project.name}"
+
+  project = UpdateProjectAccessToken.call(project, ENV['ROLLBAR_ACCESS_TOKEN'])
+  next if project.token.nil?
+
+  project = ExtractProjectDeploys.call(project)
+  project = ExtractProjectItems.call(project)
+  sleep(0.5)
+end
+#
+binding.pry
